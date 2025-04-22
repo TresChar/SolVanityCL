@@ -10,6 +10,7 @@ from core.opencl.manager import (
     get_all_gpu_devices,
     get_selected_gpu_devices,
 )
+from core.utils.crypto import WalletFormat
 
 
 class Searcher:
@@ -123,7 +124,12 @@ def multi_gpu_init(
     return [0]
 
 
-def save_result(outputs: List, output_dir: str) -> int:
+def save_result(
+    outputs: List,
+    output_dir: str,
+    format: WalletFormat = "json",
+    password: Optional[str] = None
+) -> int:
     from core.utils.crypto import save_keypair
 
     result_count = 0
@@ -132,5 +138,5 @@ def save_result(outputs: List, output_dir: str) -> int:
             continue
         result_count += 1
         pv_bytes = bytes(output[1:])
-        save_keypair(pv_bytes, output_dir)
+        save_keypair(pv_bytes, output_dir, format=format, password=password)
     return result_count

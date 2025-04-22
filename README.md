@@ -21,8 +21,8 @@ You will enter the container. The source code is located in the /app directory i
 
 Use the Docker image loerfy/sol_vanity_cl:latest. You can easily use the template I created on [vast.ai](https://cloud.vast.ai/?ref_id=109219&creator_id=109219&name=SolVanityCL) or [runpod.io](https://runpod.io/console/deploy?template=fgllgqsl24&ref=uh5x1hv5) to run this program. Please note:
 
-1. The device’s CUDA version should be greater than 12.0.
-2. The source code is located in the /app directory, so you don’t need to download the code from GitHub.
+1. The device's CUDA version should be greater than 12.0.
+2. The source code is located in the /app directory, so you don't need to download the code from GitHub.
 
 ## Usage
 
@@ -62,16 +62,41 @@ Options:
                                   iteration.  [default: 24]
   --is-case-sensitive BOOLEAN     Whether the search should be case sensitive
                                   or not. [default: True]
+  --wallet-format TEXT           Output wallet format (json, base58, mnemonic, or keystore) [default: json]
+  --password TEXT                Password for keystore format (required if using keystore format)
   --help                          Show this message and exit.
 ```
 
 Example:
 
 ```bash
-$ python3 main.py search-pubkey --starts-with SoL # run
-$ solana-keygen pubkey SoLxxxxxxxxxxx.json # you should install solana cli to verify it
+# Generate address starting with 'SoL' in default JSON format
+$ python3 main.py search-pubkey --starts-with SoL
+
+# Generate address with Base58 private key format
+$ python3 main.py search-pubkey --starts-with SoL --wallet-format base58
+
+# Generate address with mnemonic seed phrase
+$ python3 main.py search-pubkey --starts-with SoL --wallet-format mnemonic
+
+# Generate address with encrypted keystore
+$ python3 main.py search-pubkey --starts-with SoL --wallet-format keystore --password yourpassword
 ```
 
+### Wallet Formats
+
+The program supports four wallet formats:
+
+1. `json` (default) - Solana CLI format, compatible with `solana-keygen`
+2. `base58` - Raw Base58 private key, can be imported into most Solana wallets
+3. `mnemonic` - BIP39 seed phrase that can be imported into any wallet
+4. `keystore` - Encrypted keystore file (requires password)
+
+Files are saved with corresponding extensions:
+- `.json` for Solana CLI format
+- `.key` for Base58 private key
+- `.phrase` for mnemonic seed phrase
+- `.keystore` for encrypted keystore
 
 ## FAQs
 

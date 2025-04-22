@@ -14,6 +14,7 @@ from core.opencl.manager import (
 )
 from core.searcher import multi_gpu_init, save_result
 from core.utils.helpers import check_character, load_kernel_source
+from core.utils.crypto import WalletFormat
 
 logging.basicConfig(level="INFO", format="[%(levelname)s %(asctime)s] %(message)s")
 
@@ -58,6 +59,17 @@ def cli():
 @click.option(
     "--is-case-sensitive", type=bool, default=True, help="Case sensitive search flag."
 )
+@click.option(
+    "--wallet-format",
+    type=click.Choice(["json", "base58", "mnemonic", "keystore"], case_sensitive=False),
+    default="json",
+    help="Output wallet format",
+)
+@click.option(
+    "--password",
+    type=str,
+    help="Password for keystore format (required if --wallet-format=keystore)",
+)
 def search_pubkey(
     starts_with,
     ends_with,
@@ -66,12 +78,18 @@ def search_pubkey(
     select_device,
     iteration_bits,
     is_case_sensitive,
+    wallet_format,
+    password,
 ):
     """Search for Solana vanity pubkeys."""
     if not starts_with and not ends_with:
         click.echo("Please provide at least one of --starts-with or --ends-with.")
         ctx = click.get_current_context()
         click.echo(ctx.get_help())
+        sys.exit(1)
+
+    if wallet_format == "keystore" and not password:
+        click.echo("Password is required for keystore format")
         sys.exit(1)
 
     for prefix in starts_with:
@@ -92,6 +110,7 @@ def search_pubkey(
         is_case_sensitive,
     )
     logging.info(f"Using {gpu_counts} OpenCL device(s)")
+    logging.info(f"Wallet format: {wallet_format}")
 
     result_count = 0
     with multiprocessing.Manager() as manager:
@@ -116,7 +135,12 @@ def search_pubkey(
                         for x in range(gpu_counts)
                     ],
                 )
-                result_count += save_result(results, output_dir)
+                result_count += save_result(
+                    results, 
+                    output_dir,
+                    format=wallet_format,
+                    password=password
+                )
 
 
 @cli.command(context_settings={"show_default": True})
